@@ -22,8 +22,37 @@
     border: 1px solid antiquewhite;
 }
 
+.form_auth {
+    padding: 10px;
+}
+
 .head_form {
     color: antiquewhite;
+}
+
+.login  {
+    padding: 10px;
+}
+
+.password {
+    padding: 10px;
+}
+
+.login_label , .password_label {
+    color: antiquewhite;
+}
+
+.check {
+    color: antiquewhite;
+}
+
+.button_enter {
+    padding: 20px;
+}
+
+.btn_ent {
+    width: 200px;
+    height: 30px;
 }
 
 
