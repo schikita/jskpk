@@ -1,37 +1,102 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./styles.css">
-    <title>Сайт отдела сбыта пищевых концентратов</title>
+    <title>Отдел сбыта пищевых концентратов</title>
 </head>
-<body>
-    <section class="auth">
-        <div class="container">
-            <div class="form_auth">
-                <form action="GET">
-                    <h1 class="head_form">Форма авторизации</h1>
-                    <div class="login">
-                        <label class="login_label" for="name">Логин</label>
-                        <input type="text">
-                    </div>
-                    <div class="password">
-                        <label class="password_label" for="text">Пароль</label>
-                        <input type="password">
-                    </div>                    
-                    
-                    <input type="checkbox"><span class="check"> Запомнить меня</span> 
-                    
-                    <div class="button_enter">
-                        <button class="btn_ent">
-                            ВОЙТИ
-                        </button>
-                    </div>
-                
-                </form>
-            </div>
+<body class="page-home">
+    <header class="header">
+        <div class="header__inner">
+            <a class="logo" href="./index.html">ОСПК</a>
+            <nav class="nav">
+                <a class="nav__link" href="#about">О нас</a>
+                <a class="nav__link" href="#products">Продукция</a>
+                <a class="nav__link" href="#contacts">Контакты</a>
+                <a class="nav__link nav__link--auth" href="./auth.html">Вход для сотрудников</a>
+            </nav>
         </div>
-    </section>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero__content">
+                <p class="hero__label">Пищевые концентраты</p>
+                <h1 class="hero__title">Отдел сбыта пищевых концентратов</h1>
+                <p class="hero__text">
+                    Качественная продукция для общепита, переработки и розничных сетей.
+                    Работаем с партнёрами по всей стране.
+                </p>
+                <a class="btn btn--primary" href="#products">Смотреть продукцию</a>
+            </div>
+        </section>
+
+        <section class="section" id="about">
+            <div class="section__inner">
+                <h2 class="section__title">О нас</h2>
+                <p class="section__text">
+                    Мы занимаемся поставками пищевых концентратов: супов, соусов, приправ
+                    и смесей для промышленного и домашнего использования. Помогаем клиентам
+                    подобрать ассортимент под их задачи и обеспечиваем стабильные поставки.
+                </p>
+            </div>
+        </section>
+
+        <section class="section section--alt" id="products">
+            <div class="section__inner">
+                <h2 class="section__title">Продукция</h2>
+                <div class="cards">
+                    <article class="card">
+                        <h3 class="card__title">Суповые концентраты</h3>
+                        <p class="card__text">Быстрорастворимые основы для первых блюд разных вкусов.</p>
+                    </article>
+                    <article class="card">
+                        <h3 class="card__title">Соусы и заправки</h3>
+                        <p class="card__text">Готовые смеси для горячих и холодных блюд.</p>
+                    </article>
+                    <article class="card">
+                        <h3 class="card__title">Приправы и специи</h3>
+                        <p class="card__text">Сбалансированные композиции для мяса, рыбы и овощей.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="contacts">
+            <div class="section__inner">
+                <h2 class="section__title">Контакты</h2>
+                <ul class="contacts">
+                    <li><strong>Телефон:</strong> +7 (800) 000-00-00</li>
+                    <li><strong>Email:</strong> info@ospk.example.ru</li>
+                    <li><strong>Адрес:</strong> г. Москва, ул. Примерная, д. 1</li>
+                    <li><strong>Режим работы:</strong> пн–пт, 9:00–18:00</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>© 2026 Отдел сбыта пищевых концентратов</p>
+    </footer>
+
+    <aside class="cookie-banner" id="cookieBanner" role="dialog" aria-label="Уведомление о cookie">
+        <div class="cookie-banner__inner">
+            <span class="cookie-banner__icon" aria-hidden="true">🍪</span>
+            <p class="cookie-banner__text">
+                Мы используем cookie для улучшения работы сайта.
+                Продолжая пользоваться сайтом, вы соглашаетесь с их использованием.
+            </p>
+            <button type="button" class="cookie-banner__btn" id="cookieAccept">
+                Принять
+            </button>
+        </div>
+    </aside>
+
+    <script>
+        document.getElementById('cookieAccept').addEventListener('click', function () {
+            document.getElementById('cookieBanner').classList.add('cookie-banner--hidden');
+        });
+    </script>
 </body>
 </html>

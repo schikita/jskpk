@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./styles.css">
+    <title>Вход — Отдел сбыта пищевых концентратов</title>
+</head>
+<body>
+    <section class="auth">
+        <div class="container">
+            <div class="form_auth">
+                <a class="auth-back" href="./index.html">← На главную</a>
+                <form action="GET">
+                    <h1 class="head_form">Форма авторизации</h1>
+                    <p class="form_subtitle">Отдел сбыта пищевых концентратов</p>
+                    <div class="login">
+                        <label class="login_label" for="login">Логин</label>
+                        <input type="text" id="login" name="login" placeholder="Введите логин">
+                    </div>
+                    <div class="password">
+                        <label class="password_label" for="password">Пароль</label>
+                        <input type="password" id="password" name="password" placeholder="Введите пароль">
+                    </div>
+
+                    <label class="remember">
+                        <input type="checkbox" id="remember" name="remember">
+                        <span class="check">Запомнить меня</span>
+                    </label>
+
+                    <div class="button_enter">
+                        <button class="btn_ent" type="submit">
+                            ВОЙТИ
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <aside class="cookie-banner" id="cookieBanner" role="dialog" aria-label="Уведомление о cookie">
+        <div class="cookie-banner__inner">
+            <span class="cookie-banner__icon" aria-hidden="true">🍪</span>
+            <p class="cookie-banner__text">
+                Мы используем cookie для улучшения работы сайта.
+                Продолжая пользоваться сайтом, вы соглашаетесь с их использованием.
+            </p>
+            <button type="button" class="cookie-banner__btn" id="cookieAccept">
+                Принять
+            </button>
+        </div>
+    </aside>
+
+    <script>
+        document.getElementById('cookieAccept').addEventListener('click', function () {
+            document.getElementById('cookieBanner').classList.add('cookie-banner--hidden');
+        });
+    </script>
+</body>
+</html>
