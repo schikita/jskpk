@@ -1,0 +1,30 @@
+* {
+    margin: 0px;
+}
+
+.auth {
+    height: 703px;
+    background-image:
+        linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)),
+        url("./bg-hero.png");
+    background-size: cover;
+    background-position: center center;
+    background-color: #000;
+
+    text-align: center;
+    padding-top: 100px;
+}
+
+.container {
+    width: 50%;
+    margin: 0px auto;
+    
+    border: 1px solid antiquewhite;
+}
+
+.head_form {
+    color: antiquewhite;
+}
+
+
+
