@@ -80,23 +80,24 @@
         <p>© 2026 Отдел сбыта пищевых концентратов</p>
     </footer>
 
-    <aside class="cookie-banner" id="cookieBanner" role="dialog" aria-label="Уведомление о cookie">
+    <aside class="cookie-banner cookie-banner--hidden" id="cookieBanner" role="dialog" aria-label="Уведомление о cookie" aria-hidden="true">
         <div class="cookie-banner__inner">
             <span class="cookie-banner__icon" aria-hidden="true">🍪</span>
             <p class="cookie-banner__text">
-                Мы используем cookie для улучшения работы сайта.
-                Продолжая пользоваться сайтом, вы соглашаетесь с их использованием.
+                Мы используем cookie для работы сайта и авторизации.
+                Вы можете принять их использование или отклонить необязательные cookie.
             </p>
-            <button type="button" class="cookie-banner__btn" id="cookieAccept">
-                Принять
-            </button>
+            <div class="cookie-banner__actions">
+                <button type="button" class="cookie-banner__btn cookie-banner__btn--secondary" id="cookieReject">
+                    Отклонить
+                </button>
+                <button type="button" class="cookie-banner__btn" id="cookieAccept">
+                    Принять
+                </button>
+            </div>
         </div>
     </aside>
 
-    <script>
-        document.getElementById('cookieAccept').addEventListener('click', function () {
-            document.getElementById('cookieBanner').classList.add('cookie-banner--hidden');
-        });
-    </script>
+    <script src="./cookie-consent.js"></script>
 </body>
 </html>

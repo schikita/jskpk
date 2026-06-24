@@ -1,13 +1,260 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./styles.css" />
     <title>Молунов Кирилл</title>
-</head>
-<body>
-    <h1>
-        Страница менеджера
-    </h1>
-</body>
+  </head>
+  <body class="page-panel">
+    <header class="panel-header">
+      <div class="panel-header__inner">
+        <a class="panel-logo" href="./index.html">ОСПК</a>
+        <div class="panel-header__actions">
+          <span class="panel-role" id="managerRole">Менеджер</span>
+          <a class="panel-link" href="./index.html">На сайт</a>
+          <button id="logoutButton" class="panel-btn panel-btn--secondary" type="button">
+            Выйти
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <section class="panel-hero">
+      <div class="panel-hero__inner">
+        <div>
+          <p class="panel-hero__label">Панель управления</p>
+          <h1 class="panel-hero__title">Управление товарами</h1>
+          <p class="panel-hero__text">
+            Добавляйте новые позиции в каталог и следите за актуальным ассортиментом.
+          </p>
+        </div>
+        <div class="panel-stat">
+          <span class="panel-stat__value" id="productsCount">0</span>
+          <span class="panel-stat__label">товаров в каталоге</span>
+        </div>
+      </div>
+    </section>
+
+    <main class="panel-main">
+      <section class="panel-card panel-card--form">
+        <div class="panel-card__head">
+          <div>
+            <h2 class="panel-card__title">Новый товар</h2>
+            <p class="panel-card__hint">Заполните поля и сохраните позицию в каталог</p>
+          </div>
+        </div>
+
+        <form id="productForm" class="product-form">
+          <div class="form-field">
+            <label class="form-label" for="productName">Название</label>
+            <input
+              type="text"
+              id="productName"
+              name="name"
+              placeholder="Например: Суповой концентрат грибной"
+              required
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label" for="productCategory">Категория</label>
+              <input
+                type="text"
+                id="productCategory"
+                name="category"
+                placeholder="Супы, соусы, приправы..."
+              />
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="productPrice">Цена, ₽</label>
+              <input
+                type="number"
+                id="productPrice"
+                name="price"
+                min="0"
+                step="0.01"
+                placeholder="450"
+              />
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="productDescription">Описание</label>
+            <textarea
+              id="productDescription"
+              name="description"
+              rows="4"
+              placeholder="Краткое описание товара для каталога"
+            ></textarea>
+          </div>
+
+          <p id="formMessage" class="form-message" hidden></p>
+
+          <button class="panel-btn panel-btn--primary panel-btn--wide" type="submit">
+            Добавить товар
+          </button>
+        </form>
+      </section>
+
+      <section class="panel-card panel-card--list">
+        <div class="panel-card__head">
+          <div>
+            <h2 class="panel-card__title">Каталог</h2>
+            <p class="panel-card__hint">Все добавленные товары</p>
+          </div>
+        </div>
+        <div id="productsList" class="products-list">
+          <p class="products-empty">Загрузка...</p>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const productForm = document.getElementById('productForm');
+      const productsList = document.getElementById('productsList');
+      const productsCount = document.getElementById('productsCount');
+      const formMessage = document.getElementById('formMessage');
+      const logoutButton = document.getElementById('logoutButton');
+      const managerRole = document.getElementById('managerRole');
+
+      function showMessage(text, isError) {
+        formMessage.textContent = text;
+        formMessage.hidden = false;
+        formMessage.classList.toggle('form-message--error', isError);
+        formMessage.classList.toggle('form-message--success', !isError);
+      }
+
+      function formatPrice(price) {
+        if (price === null || price === undefined) {
+          return '—';
+        }
+
+        return new Intl.NumberFormat('ru-RU', {
+          style: 'currency',
+          currency: 'RUB',
+          maximumFractionDigits: 0
+        }).format(price);
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#39;');
+      }
+
+      function renderProducts(products) {
+        productsCount.textContent = String(products.length);
+
+        if (products.length === 0) {
+          productsList.innerHTML = `
+            <div class="products-empty">
+              <span class="products-empty__icon" aria-hidden="true">📦</span>
+              <p class="products-empty__title">Товаров пока нет</p>
+              <p class="products-empty__text">Добавьте первую позицию через форму слева</p>
+            </div>
+          `;
+          return;
+        }
+
+        productsList.innerHTML = products.map(function (product) {
+          return `
+            <article class="product-item">
+              <div class="product-item__main">
+                <div class="product-item__head">
+                  <h3 class="product-item__title">${escapeHtml(product.name)}</h3>
+                  <span class="product-item__price">${formatPrice(product.price)}</span>
+                </div>
+                ${product.category ? `<span class="product-item__tag">${escapeHtml(product.category)}</span>` : ''}
+                ${product.description ? `<p class="product-item__text">${escapeHtml(product.description)}</p>` : ''}
+              </div>
+            </article>
+          `;
+        }).join('');
+      }
+
+      async function loadProducts() {
+        const response = await fetch('/api/products');
+        const data = await response.json();
+
+        if (!data.ok) {
+          productsList.innerHTML = '<p class="products-empty products-empty--error">Не удалось загрузить товары</p>';
+          return;
+        }
+
+        renderProducts(data.products);
+      }
+
+      async function checkAuth() {
+        const response = await fetch('/api/me');
+
+        if (response.status === 401) {
+          window.location.href = '/auth.html';
+          return false;
+        }
+
+        const data = await response.json();
+
+        if (!data.ok || data.account.role !== 'manager') {
+          window.location.href = '/auth.html';
+          return false;
+        }
+
+        managerRole.textContent = data.account.title || 'Менеджер';
+        return true;
+      }
+
+      productForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+
+        formMessage.hidden = true;
+
+        const formData = new FormData(productForm);
+        const payload = {
+          name: formData.get('name'),
+          category: formData.get('category'),
+          description: formData.get('description'),
+          price: formData.get('price')
+        };
+
+        const response = await fetch('/api/products', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!data.ok) {
+          showMessage(data.message || 'Не удалось добавить товар', true);
+          return;
+        }
+
+        productForm.reset();
+        showMessage('Товар успешно добавлен', false);
+        loadProducts();
+      });
+
+      logoutButton.addEventListener('click', async function () {
+        await fetch('/api/logout', {
+          method: 'POST'
+        });
+
+        window.location.href = '/auth.html';
+      });
+
+      checkAuth().then(function (isAllowed) {
+        if (isAllowed) {
+          loadProducts();
+        }
+      });
+    </script>
+  </body>
 </html>

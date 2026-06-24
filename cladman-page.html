@@ -1,13 +1,42 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Молунов Кирилл</title>
-</head>
-<body>
-    <h1>
-        Страница кладовщика
-    </h1>
-</body>
+    <script>
+      async function checkAuth() {
+        const response = await fetch("/api/me");
+
+        if (response.status === 401) {
+          window.location.href = "/auth.html";
+          return;
+        }
+
+        const data = await response.json();
+
+        if (!data.ok) {
+          window.location.href = "/auth.html";
+        }
+      }
+
+      checkAuth();
+    </script>
+  </head>
+  <body>
+    <h1>Страница кладовщика</h1>
+    <button id="logoutButton" type="button">Выйти</button>
+
+    <script>
+      const logoutButton = document.getElementById("logoutButton");
+
+      logoutButton.addEventListener("click", async function () {
+        await fetch("/api/logout", {
+          method: "POST",
+        });
+
+        window.location.href = "/auth.html";
+      });
+    </script>
+  </body>
 </html>
