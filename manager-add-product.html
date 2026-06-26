@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Добавить товар</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="page">
+    <section class="panel">
+      <div class="page-header">
+        <div>
+          <h1>Добавить товар</h1>
+          <p>Страница менеджера для добавления нового товара в каталог.</p>
+        </div>
+
+        <a class="btn btn-secondary" href="/manager-page.html">Назад</a>
+      </div>
+
+      <form id="productForm" class="product-form" enctype="multipart/form-data">
+        <label class="field">
+          <span>Название товара</span>
+          <input type="text" name="name" maxlength="120" required>
+        </label>
+
+        <label class="field">
+          <span>Описание</span>
+          <textarea name="description" maxlength="500" rows="4"></textarea>
+        </label>
+
+        <label class="field">
+          <span>Категория</span>
+          <input type="text" name="category" maxlength="80">
+        </label>
+
+        <label class="field">
+          <span>Цена</span>
+          <input type="number" name="price" min="0" step="0.01" value="0">
+        </label>
+
+        <label class="field">
+          <span>Остаток на складе</span>
+          <input type="number" name="stock" min="0" step="1" value="0">
+        </label>
+
+        <label class="field">
+          <span>Картинка товара</span>
+          <input id="imageInput" type="file" name="image" accept="image/jpeg,image/png,image/webp">
+        </label>
+
+        <div class="preview-box">
+          <img id="imagePreview" src="/images/products/no-image.svg" alt="Предпросмотр">
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" type="submit">Добавить товар</button>
+          <a class="btn btn-secondary" href="/cladman/catalog">Открыть каталог</a>
+        </div>
+
+        <p id="message" class="message"></p>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    const productForm = document.getElementById('productForm');
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+    const message = document.getElementById('message');
+
+    imageInput.addEventListener('change', function () {
+      const file = imageInput.files[0];
+
+      if (!file) {
+        imagePreview.src = '/images/products/no-image.svg';
+        return;
+      }
+
+      imagePreview.src = URL.createObjectURL(file);
+    });
+
+    productForm.addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      message.textContent = 'Сохраняем товар...';
+      message.className = 'message';
+
+      const formData = new FormData(productForm);
+
+      try {
+        const response = await fetch('/api/manager/products', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || 'Не удалось добавить товар');
+        }
+
+        productForm.reset();
+        imagePreview.src = '/images/products/no-image.svg';
+
+        message.textContent = 'Товар успешно добавлен';
+        message.className = 'message success';
+      } catch (error) {
+        message.textContent = error.message;
+        message.className = 'message error';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 {
   "name": "jskpk",
   "version": "1.0.0",
-  "description": "Author - Molunov Kirill",  
+  "description": "Author - Molunov Kirill",
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
@@ -16,7 +16,8 @@
     "better-sqlite3": "^12.11.1",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
-    "helmet": "^8.2.0"
+    "helmet": "^8.2.0",
+    "multer": "^2.2.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

@@ -1,260 +1,851 @@
 <!doctype html>
 <html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="./styles.css" />
-    <title>Молунов Кирилл</title>
-  </head>
-  <body class="page-panel">
-    <header class="panel-header">
-      <div class="panel-header__inner">
-        <a class="panel-logo" href="./index.html">ОСПК</a>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="./styles.css" />
+  <title>Молунов Кирилл — Менеджер</title>
+  <style>
+    .orders-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .order-item {
+      padding: 16px 18px;
+      border: 1px solid #e2e9e3;
+      border-radius: 14px;
+      background: #fff;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .order-item:hover {
+      border-color: #4a7c59;
+      box-shadow: 0 4px 12px rgba(74, 124, 89, 0.08);
+    }
+
+    .order-item__head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .order-item__id {
+      font-weight: 600;
+      color: #1f3d24;
+    }
+
+    .order-item__status {
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-approved {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-rejected {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .status-shipped {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .status-delivered {
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+
+    .order-item__user {
+      font-size: 0.875rem;
+      color: #6b7c6e;
+    }
+
+    .order-item__items {
+      margin: 8px 0;
+      font-size: 0.9375rem;
+      color: #3d4f40;
+      background: #f7f9f7;
+      padding: 10px 14px;
+      border-radius: 8px;
+    }
+
+    .order-item__total {
+      font-weight: 600;
+      color: #1f3d24;
+    }
+
+    .order-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .order-actions .btn-sm {
+      padding: 6px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .order-actions .btn-sm:active {
+      transform: scale(0.97);
+    }
+
+    .btn-approve {
+      background: #4a7c59;
+      color: #fff;
+    }
+
+    .btn-approve:hover {
+      background: #3d6849;
+    }
+
+    .btn-reject {
+      background: #dc2626;
+      color: #fff;
+    }
+
+    .btn-reject:hover {
+      background: #b91c1c;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+      background: #eef5ef;
+      border-radius: 12px;
+      padding: 4px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: #5a6b5c;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: #fff;
+      color: #1f3d24;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .tab-btn:hover:not(.active) {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    /* ===== МОДАЛЬНОЕ ОКНО ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: #fff;
+      border-radius: 20px;
+      padding: 32px;
+      max-width: 520px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+      animation: modalFadeIn 0.3s ease;
+    }
+
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .modal__head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #eef2ee;
+    }
+
+    .modal__title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1f3d24;
+    }
+
+    .modal__close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #6b7c6e;
+      transition: color 0.2s;
+      line-height: 1;
+      padding: 4px 8px;
+    }
+
+    .modal__close:hover {
+      color: #dc2626;
+    }
+
+    .product-item__actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .product-item__actions .btn-sm {
+      padding: 6px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .product-item__actions .btn-sm:active {
+      transform: scale(0.97);
+    }
+
+    .btn-edit {
+      background: #2563eb;
+      color: #fff;
+    }
+
+    .btn-edit:hover {
+      background: #1d4ed8;
+    }
+
+    .btn-delete {
+      background: #dc2626;
+      color: #fff;
+    }
+
+    .btn-delete:hover {
+      background: #b91c1c;
+    }
+
+    .products-manager-list {
+      display: grid;
+      gap: 10px;
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .product-item-manager {
+      padding: 14px 16px;
+      border: 1px solid #e2e9e3;
+      border-radius: 12px;
+      background: #fff;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .product-item-manager:hover {
+      border-color: #4a7c59;
+      box-shadow: 0 4px 12px rgba(74, 124, 89, 0.08);
+    }
+
+    .product-item-manager__head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .product-item-manager__name {
+      font-weight: 600;
+      color: #1f3d24;
+    }
+
+    .product-item-manager__tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .product-item-manager__tag {
+      font-size: 0.75rem;
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: #eef5ef;
+      color: #6b7c6e;
+    }
+
+    .product-item-manager__tag-stock {
+      font-size: 0.75rem;
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: #f0f7f1;
+      color: #4a7c59;
+    }
+  </style>
+</head>
+
+<body class="page-panel">
+  <header class="panel-header">
+    <div class="panel-header__inner">
+      <a class="panel-logo" href="./index.html">ОСПК</a>
         <div class="panel-header__actions">
           <span class="panel-role" id="managerRole">Менеджер</span>
+          <a class="btn btn-primary" href="/manager/products/new">Добавить товар</a>
           <a class="panel-link" href="./index.html">На сайт</a>
-          <button id="logoutButton" class="panel-btn panel-btn--secondary" type="button">
-            Выйти
-          </button>
+        <button id="logoutButton" class="panel-btn panel-btn--secondary" type="button">Выйти</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="panel-hero">
+    <div class="panel-hero__inner">
+      <div>
+        <p class="panel-hero__label">Панель управления</p>
+        <h1 class="panel-hero__title">Управление заявками</h1>
+        <p class="panel-hero__text">Одобряйте или отклоняйте заявки от пользователей. Управляйте каталогом товаров.</p>
+      </div>
+      <div class="panel-stat">
+        <span class="panel-stat__value" id="ordersCount">0</span>
+        <span class="panel-stat__label">заявок в работе</span>
+      </div>
+    </div>
+  </section>
+
+  <main class="panel-main">
+    <!-- Левая колонка: заявки -->
+    <section class="panel-card panel-card--list">
+      <div class="panel-card__head">
+        <div>
+          <h2 class="panel-card__title">Заявки</h2>
+          <p class="panel-card__hint">Все заявки от пользователей</p>
         </div>
       </div>
-    </header>
 
-    <section class="panel-hero">
-      <div class="panel-hero__inner">
-        <div>
-          <p class="panel-hero__label">Панель управления</p>
-          <h1 class="panel-hero__title">Управление товарами</h1>
-          <p class="panel-hero__text">
-            Добавляйте новые позиции в каталог и следите за актуальным ассортиментом.
-          </p>
-        </div>
-        <div class="panel-stat">
-          <span class="panel-stat__value" id="productsCount">0</span>
-          <span class="panel-stat__label">товаров в каталоге</span>
-        </div>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="pending">На рассмотрении</button>
+        <button class="tab-btn" data-tab="all">Все</button>
+      </div>
+
+      <div id="ordersList" class="orders-list">
+        <p class="products-empty">Загрузка...</p>
       </div>
     </section>
 
-    <main class="panel-main">
-      <section class="panel-card panel-card--form">
+    <!-- Правая колонка: товары -->
+    <div style="display:grid; gap:24px;">
+      <!-- Форма добавления товара (БЕЗ sticky) -->
+      <section class="panel-card">
         <div class="panel-card__head">
           <div>
-            <h2 class="panel-card__title">Новый товар</h2>
-            <p class="panel-card__hint">Заполните поля и сохраните позицию в каталог</p>
+            <h2 class="panel-card__title"> Новый товар</h2>
+            <p class="panel-card__hint">Добавьте позицию в каталог</p>
           </div>
         </div>
-
         <form id="productForm" class="product-form">
           <div class="form-field">
             <label class="form-label" for="productName">Название</label>
-            <input
-              type="text"
-              id="productName"
-              name="name"
-              placeholder="Например: Суповой концентрат грибной"
-              required
-            />
+            <input type="text" id="productName" name="name" placeholder="Например: Суповой концентрат" required />
           </div>
-
           <div class="form-row">
             <div class="form-field">
               <label class="form-label" for="productCategory">Категория</label>
-              <input
-                type="text"
-                id="productCategory"
-                name="category"
-                placeholder="Супы, соусы, приправы..."
-              />
+              <input type="text" id="productCategory" name="category" placeholder="Супы, соусы..." />
             </div>
-
             <div class="form-field">
               <label class="form-label" for="productPrice">Цена, ₽</label>
-              <input
-                type="number"
-                id="productPrice"
-                name="price"
-                min="0"
-                step="0.01"
-                placeholder="450"
-              />
+              <input type="number" id="productPrice" name="price" min="0" step="0.01" placeholder="450" />
             </div>
           </div>
-
           <div class="form-field">
             <label class="form-label" for="productDescription">Описание</label>
-            <textarea
-              id="productDescription"
-              name="description"
-              rows="4"
-              placeholder="Краткое описание товара для каталога"
-            ></textarea>
+            <textarea id="productDescription" name="description" rows="3" placeholder="Краткое описание"></textarea>
           </div>
-
           <p id="formMessage" class="form-message" hidden></p>
-
-          <button class="panel-btn panel-btn--primary panel-btn--wide" type="submit">
-            Добавить товар
-          </button>
+          <button class="panel-btn panel-btn--primary panel-btn--wide" type="submit">Добавить товар</button>
         </form>
       </section>
 
-      <section class="panel-card panel-card--list">
+      <!-- Список товаров для редактирования -->
+      <section class="panel-card">
         <div class="panel-card__head">
           <div>
-            <h2 class="panel-card__title">Каталог</h2>
-            <p class="panel-card__hint">Все добавленные товары</p>
+            <h2 class="panel-card__title">📦 Управление каталогом</h2>
+            <p class="panel-card__hint">Редактируйте или удаляйте товары</p>
           </div>
         </div>
-        <div id="productsList" class="products-list">
+        <div id="productsList" class="products-manager-list">
           <p class="products-empty">Загрузка...</p>
         </div>
       </section>
-    </main>
+    </div>
+  </main>
 
-    <script>
-      const productForm = document.getElementById('productForm');
-      const productsList = document.getElementById('productsList');
-      const productsCount = document.getElementById('productsCount');
-      const formMessage = document.getElementById('formMessage');
-      const logoutButton = document.getElementById('logoutButton');
-      const managerRole = document.getElementById('managerRole');
+  <!-- ===== МОДАЛЬНОЕ ОКНО ДЛЯ РЕДАКТИРОВАНИЯ ===== -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <div class="modal__head">
+        <h2 class="modal__title">✏️ Редактирование товара</h2>
+        <button class="modal__close" id="closeModalBtn">&times;</button>
+      </div>
+      <form id="editProductForm" class="product-form">
+        <input type="hidden" id="editProductId" />
+        
+        <div class="form-field">
+          <label class="form-label" for="editProductName">Название *</label>
+          <input type="text" id="editProductName" name="name" required />
+        </div>
+        
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label" for="editProductCategory">Категория</label>
+            <input type="text" id="editProductCategory" name="category" />
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="editProductPrice">Цена, ₽</label>
+            <input type="number" id="editProductPrice" name="price" min="0" step="0.01" />
+          </div>
+        </div>
+        
+        <div class="form-field">
+          <label class="form-label" for="editProductStock">Остаток, шт.</label>
+          <input type="number" id="editProductStock" name="stock" min="0" step="1" />
+        </div>
+        
+        <div class="form-field">
+          <label class="form-label" for="editProductDescription">Описание</label>
+          <textarea id="editProductDescription" name="description" rows="3"></textarea>
+        </div>
+        
+        <p id="editFormMessage" class="form-message" hidden></p>
+        
+        <div style="display:flex; gap:12px;">
+          <button type="button" class="panel-btn panel-btn--secondary" style="flex:1;" id="cancelEditBtn">Отмена</button>
+          <button type="submit" class="panel-btn panel-btn--primary" style="flex:2;">💾 Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-      function showMessage(text, isError) {
-        formMessage.textContent = text;
-        formMessage.hidden = false;
-        formMessage.classList.toggle('form-message--error', isError);
-        formMessage.classList.toggle('form-message--success', !isError);
+  <script>
+    const productForm = document.getElementById('productForm');
+    const ordersList = document.getElementById('ordersList');
+    const ordersCount = document.getElementById('ordersCount');
+    const formMessage = document.getElementById('formMessage');
+    const logoutButton = document.getElementById('logoutButton');
+    const managerRole = document.getElementById('managerRole');
+
+    // Элементы для управления товарами
+    const productsList = document.getElementById('productsList');
+    const editModal = document.getElementById('editModal');
+    const editProductForm = document.getElementById('editProductForm');
+    const editFormMessage = document.getElementById('editFormMessage');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+
+    let allOrders = [];
+    let currentTab = 'pending';
+
+    // ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
+    function showMessage(text, isError) {
+      formMessage.textContent = text;
+      formMessage.hidden = false;
+      formMessage.classList.toggle('form-message--error', isError);
+      formMessage.classList.toggle('form-message--success', !isError);
+    }
+
+    function showEditMessage(text, isError) {
+      editFormMessage.textContent = text;
+      editFormMessage.hidden = false;
+      editFormMessage.classList.toggle('form-message--error', isError);
+      editFormMessage.classList.toggle('form-message--success', !isError);
+    }
+
+    function formatPrice(price) {
+      if (price === null || price === undefined) return '—';
+      return new Intl.NumberFormat('ru-RU', {
+        style: 'currency',
+        currency: 'RUB',
+        maximumFractionDigits: 0
+      }).format(price);
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function getStatusLabel(status) {
+      const map = {
+        pending: 'На рассмотрении',
+        approved: 'Одобрена',
+        rejected: 'Отклонена',
+        shipped: 'Отгружена',
+        delivered: 'Доставлена'
+      };
+      return map[status] || status;
+    }
+
+    function getStatusClass(status) {
+      return 'status-' + status;
+    }
+
+    // ===== ЗАГРУЗКА ТОВАРОВ =====
+    async function loadProducts() {
+      const response = await fetch('/api/products');
+      const data = await response.json();
+      if (!data.ok) {
+        productsList.innerHTML = '<p class="products-empty products-empty--error">Не удалось загрузить товары</p>';
+        return;
+      }
+      renderProducts(data.products);
+    }
+
+    function renderProducts(products) {
+      if (products.length === 0) {
+        productsList.innerHTML = `
+          <div class="products-empty">
+            <span class="products-empty__icon" aria-hidden="true">📦</span>
+            <p class="products-empty__title">Товаров нет</p>
+            <p class="products-empty__text">Добавьте первый товар через форму выше</p>
+          </div>
+        `;
+        return;
       }
 
-      function formatPrice(price) {
-        if (price === null || price === undefined) {
-          return '—';
-        }
-
-        return new Intl.NumberFormat('ru-RU', {
-          style: 'currency',
-          currency: 'RUB',
-          maximumFractionDigits: 0
-        }).format(price);
-      }
-
-      function escapeHtml(value) {
-        return String(value)
-          .replaceAll('&', '&amp;')
-          .replaceAll('<', '&lt;')
-          .replaceAll('>', '&gt;')
-          .replaceAll('"', '&quot;')
-          .replaceAll("'", '&#39;');
-      }
-
-      function renderProducts(products) {
-        productsCount.textContent = String(products.length);
-
-        if (products.length === 0) {
-          productsList.innerHTML = `
-            <div class="products-empty">
-              <span class="products-empty__icon" aria-hidden="true">📦</span>
-              <p class="products-empty__title">Товаров пока нет</p>
-              <p class="products-empty__text">Добавьте первую позицию через форму слева</p>
-            </div>
-          `;
-          return;
-        }
-
-        productsList.innerHTML = products.map(function (product) {
-          return `
-            <article class="product-item">
-              <div class="product-item__main">
-                <div class="product-item__head">
-                  <h3 class="product-item__title">${escapeHtml(product.name)}</h3>
-                  <span class="product-item__price">${formatPrice(product.price)}</span>
-                </div>
-                ${product.category ? `<span class="product-item__tag">${escapeHtml(product.category)}</span>` : ''}
-                ${product.description ? `<p class="product-item__text">${escapeHtml(product.description)}</p>` : ''}
+      productsList.innerHTML = products.map(p => `
+        <div class="product-item-manager">
+          <div class="product-item-manager__head">
+            <div>
+              <div class="product-item-manager__name">${escapeHtml(p.name)}</div>
+              <div class="product-item-manager__tags">
+                <span class="product-item-manager__tag">${escapeHtml(p.category || 'Без категории')}</span>
+                <span class="product-item-manager__tag">${formatPrice(p.price)}</span>
+                <span class="product-item-manager__tag-stock">📦 ${p.stock} шт.</span>
               </div>
-            </article>
-          `;
-        }).join('');
+              ${p.description ? `<div style="font-size:0.8125rem; color:#6b7c6e; margin-top:4px;">${escapeHtml(p.description)}</div>` : ''}
+            </div>
+          </div>
+          <div class="product-item__actions">
+            <button class="btn-sm btn-edit" onclick="openEditModal(${p.id})">✏️ Редактировать</button>
+            <button class="btn-sm btn-delete" onclick="deleteProduct(${p.id})">🗑️ Удалить</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ===== ОТКРЫТИЕ МОДАЛЬНОГО ОКНА =====
+    async function openEditModal(productId) {
+      const response = await fetch('/api/products');
+      const data = await response.json();
+      if (!data.ok) {
+        alert('Не удалось загрузить товар');
+        return;
+      }
+      
+      const product = data.products.find(p => p.id === productId);
+      if (!product) {
+        alert('Товар не найден');
+        return;
       }
 
-      async function loadProducts() {
-        const response = await fetch('/api/products');
-        const data = await response.json();
+      document.getElementById('editProductId').value = product.id;
+      document.getElementById('editProductName').value = product.name;
+      document.getElementById('editProductCategory').value = product.category || '';
+      document.getElementById('editProductPrice').value = product.price || '';
+      document.getElementById('editProductStock').value = product.stock || 0;
+      document.getElementById('editProductDescription').value = product.description || '';
+      
+      editFormMessage.hidden = true;
+      editModal.classList.add('active');
+    }
 
-        if (!data.ok) {
-          productsList.innerHTML = '<p class="products-empty products-empty--error">Не удалось загрузить товары</p>';
-          return;
-        }
+    // ===== ЗАКРЫТИЕ МОДАЛЬНОГО ОКНА =====
+    function closeEditModal() {
+      editModal.classList.remove('active');
+      editProductForm.reset();
+      editFormMessage.hidden = true;
+    }
 
-        renderProducts(data.products);
+    closeModalBtn.addEventListener('click', closeEditModal);
+    cancelEditBtn.addEventListener('click', closeEditModal);
+    editModal.addEventListener('click', function(e) {
+      if (e.target === this) closeEditModal();
+    });
+
+    // ===== СОХРАНЕНИЕ ИЗМЕНЕНИЙ =====
+    editProductForm.addEventListener('submit', async function(event) {
+      event.preventDefault();
+      editFormMessage.hidden = true;
+
+      const id = document.getElementById('editProductId').value;
+      const payload = {
+        name: document.getElementById('editProductName').value.trim(),
+        category: document.getElementById('editProductCategory').value.trim(),
+        price: document.getElementById('editProductPrice').value,
+        stock: document.getElementById('editProductStock').value,
+        description: document.getElementById('editProductDescription').value.trim()
+      };
+
+      if (!payload.name) {
+        showEditMessage('Название товара обязательно', true);
+        return;
       }
 
-      async function checkAuth() {
-        const response = await fetch('/api/me');
-
-        if (response.status === 401) {
-          window.location.href = '/auth.html';
-          return false;
-        }
-
-        const data = await response.json();
-
-        if (!data.ok || data.account.role !== 'manager') {
-          window.location.href = '/auth.html';
-          return false;
-        }
-
-        managerRole.textContent = data.account.title || 'Менеджер';
-        return true;
-      }
-
-      productForm.addEventListener('submit', async function (event) {
-        event.preventDefault();
-
-        formMessage.hidden = true;
-
-        const formData = new FormData(productForm);
-        const payload = {
-          name: formData.get('name'),
-          category: formData.get('category'),
-          description: formData.get('description'),
-          price: formData.get('price')
-        };
-
-        const response = await fetch('/api/products', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+      try {
+        const response = await fetch(`/api/products/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-
         const data = await response.json();
-
+        
         if (!data.ok) {
-          showMessage(data.message || 'Не удалось добавить товар', true);
+          showEditMessage(data.message || 'Не удалось обновить товар', true);
           return;
         }
-
-        productForm.reset();
-        showMessage('Товар успешно добавлен', false);
-        loadProducts();
-      });
-
-      logoutButton.addEventListener('click', async function () {
-        await fetch('/api/logout', {
-          method: 'POST'
-        });
-
-        window.location.href = '/auth.html';
-      });
-
-      checkAuth().then(function (isAllowed) {
-        if (isAllowed) {
+        
+        showEditMessage('✅ Товар успешно обновлён', false);
+        setTimeout(() => {
+          closeEditModal();
           loadProducts();
+        }, 800);
+      } catch (err) {
+        showEditMessage('Ошибка соединения', true);
+      }
+    });
+
+    // ===== УДАЛЕНИЕ ТОВАРА =====
+    async function deleteProduct(id) {
+      if (!confirm('Вы уверены, что хотите удалить этот товар?')) return;
+      
+      try {
+        const response = await fetch(`/api/products/${id}`, {
+          method: 'DELETE'
+        });
+        const data = await response.json();
+        if (!data.ok) {
+          alert(data.message || 'Не удалось удалить товар');
+          return;
         }
+        alert('✅ Товар удалён');
+        loadProducts();
+      } catch (err) {
+        alert('Ошибка соединения');
+      }
+    }
+
+    // ===== ЗАГРУЗКА ЗАЯВОК =====
+    function renderOrders(orders) {
+      const pendingOrders = orders.filter(o => o.status === 'pending');
+      const count = currentTab === 'pending' ? pendingOrders.length : orders.length;
+      ordersCount.textContent = String(count);
+
+      const list = currentTab === 'pending' ? pendingOrders : orders;
+
+      if (list.length === 0) {
+        ordersList.innerHTML = `
+          <div class="products-empty">
+            <span class="products-empty__icon" aria-hidden="true">📋</span>
+            <p class="products-empty__title">Заявок нет</p>
+            <p class="products-empty__text">${currentTab === 'pending' ? 'Все заявки обработаны' : 'Нет заявок'}</p>
+          </div>
+        `;
+        return;
+      }
+
+      ordersList.innerHTML = list.map(function (order) {
+        const itemsHtml = order.items.map(item =>
+          `${escapeHtml(item.name)} × ${item.quantity}`
+        ).join(', ');
+
+        const total = order.total_price || order.items.reduce((sum, i) => sum + (i.price || 0) * i.quantity, 0);
+
+        let actionsHtml = '';
+
+        if (order.status === 'pending') {
+          actionsHtml = `
+            <div class="order-actions">
+              <button class="btn-sm btn-approve" data-id="${order.id}" data-action="approve">✅ Одобрить</button>
+              <button class="btn-sm btn-reject" data-id="${order.id}" data-action="reject">❌ Отклонить</button>
+            </div>
+          `;
+        }
+
+        return `
+          <article class="order-item">
+            <div class="order-item__head">
+              <span class="order-item__id">📋 Заявка #${order.id}</span>
+              <span class="order-item__status ${getStatusClass(order.status)}">${getStatusLabel(order.status)}</span>
+            </div>
+            <div class="order-item__user">👤 От: ${escapeHtml(order.user_title)} (${order.user_role})</div>
+            <div class="order-item__items">${itemsHtml}</div>
+            <div class="order-item__total">💰 Итого: ${formatPrice(total)}</div>
+            <div style="font-size:0.75rem; color:#6b7c6e; margin-top:4px;">
+              🕐 ${new Date(order.created_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}
+            </div>
+            ${actionsHtml}
+          </article>
+        `;
+      }).join('');
+
+      document.querySelectorAll('[data-action="approve"], [data-action="reject"]').forEach(btn => {
+        btn.addEventListener('click', async function () {
+          const id = this.dataset.id;
+          const action = this.dataset.action;
+          const status = action === 'approve' ? 'approved' : 'rejected';
+          await updateOrderStatus(id, status);
+        });
       });
-    </script>
-  </body>
+    }
+
+    async function updateOrderStatus(id, status) {
+      try {
+        const response = await fetch(`/api/orders/${id}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+        const data = await response.json();
+        if (!data.ok) {
+          alert(data.message || 'Ошибка');
+          return;
+        }
+        loadOrders();
+      } catch (err) {
+        alert('Ошибка соединения');
+      }
+    }
+
+    async function loadOrders() {
+      const response = await fetch('/api/orders');
+      const data = await response.json();
+      if (!data.ok) {
+        ordersList.innerHTML = '<p class="products-empty products-empty--error">Не удалось загрузить заявки</p>';
+        return;
+      }
+      allOrders = data.orders;
+      renderOrders(allOrders);
+    }
+
+    // ===== ПРОВЕРКА АВТОРИЗАЦИИ =====
+    async function checkAuth() {
+      const response = await fetch('/api/me');
+      if (response.status === 401) {
+        window.location.href = '/auth.html';
+        return false;
+      }
+      const data = await response.json();
+      if (!data.ok || data.account.role !== 'manager') {
+        window.location.href = '/auth.html';
+        return false;
+      }
+      managerRole.textContent = data.account.title || 'Менеджер';
+      return true;
+    }
+
+    // ===== ДОБАВЛЕНИЕ ТОВАРА =====
+    productForm.addEventListener('submit', async function (event) {
+      event.preventDefault();
+      formMessage.hidden = true;
+
+      const formData = new FormData(productForm);
+      const payload = {
+        name: formData.get('name'),
+        category: formData.get('category'),
+        description: formData.get('description'),
+        price: formData.get('price')
+      };
+
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+
+      if (!data.ok) {
+        showMessage(data.message || 'Не удалось добавить товар', true);
+        return;
+      }
+      productForm.reset();
+      showMessage('✅ Товар успешно добавлен', false);
+      loadProducts();
+    });
+
+    // ===== ВЫХОД =====
+    logoutButton.addEventListener('click', async function () {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/auth.html';
+    });
+
+    // ===== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК =====
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentTab = this.dataset.tab;
+        renderOrders(allOrders);
+      });
+    });
+
+    // ===== ЗАПУСК =====
+    checkAuth().then(function (ok) {
+      if (ok) {
+        loadOrders();
+        loadProducts();
+      }
+    });
+  </script>
+</body>
 </html>

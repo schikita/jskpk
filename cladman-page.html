@@ -1,42 +1,325 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Молунов Кирилл</title>
-    <script>
-      async function checkAuth() {
-        const response = await fetch("/api/me");
+<html lang="ru">
 
-        if (response.status === 401) {
-          window.location.href = "/auth.html";
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="./styles.css" />
+  <title>Молунов Кирилл — Кладовщик</title>
+  <style>
+    .cladman-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .order-card {
+      padding: 18px 22px;
+      border: 1px solid #e2e9e3;
+      border-radius: 14px;
+      background: #fff;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .order-card:hover {
+      border-color: #4a7c59;
+      box-shadow: 0 6px 20px rgba(74, 124, 89, 0.08);
+    }
+
+    .order-card__head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .order-card__id {
+      font-weight: 600;
+      color: #1f3d24;
+      font-size: 1.05rem;
+    }
+
+    .order-card__status {
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-approved {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-shipped {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .status-delivered {
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+
+    .order-card__user {
+      font-size: 0.875rem;
+      color: #6b7c6e;
+    }
+
+    .order-card__items {
+      margin: 8px 0;
+      font-size: 0.9375rem;
+      color: #3d4f40;
+      background: #f7f9f7;
+      padding: 10px 14px;
+      border-radius: 8px;
+    }
+
+    .order-card__total {
+      font-weight: 600;
+      color: #1f3d24;
+    }
+
+    .btn-ship {
+      margin-top: 12px;
+      padding: 10px 28px;
+      border: none;
+      border-radius: 10px;
+      background: #4a7c59;
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.9375rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-ship:hover {
+      background: #3d6849;
+    }
+
+    .btn-ship:active {
+      transform: scale(0.98);
+    }
+
+    .btn-ship:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .btn-ship.btn-shipped {
+      background: #d1fae5;
+      color: #065f46;
+      cursor: default;
+    }
+
+    .btn-ship.btn-shipped:hover {
+      background: #d1fae5;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      background: #f7f9f7;
+      border-radius: 16px;
+      border: 2px dashed #d4ddd6;
+    }
+
+    .empty-state__icon {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    .empty-state__title {
+      font-weight: 600;
+      color: #1f3d24;
+      font-size: 1.125rem;
+    }
+
+    .empty-state__text {
+      color: #6b7c6e;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+
+<body class="page-panel">
+  <header class="panel-header">
+    <div class="panel-header__inner">
+      <a class="panel-logo" href="./index.html">ОСПК</a>
+        <div class="panel-header__actions">
+          <span class="panel-role" id="cladmanRole">Кладовщик</span>
+          <a class="btn btn-primary" href="/cladman/catalog">Каталог товаров</a>
+          <a class="panel-link" href="./index.html">На сайт</a>
+        <button id="logoutButton" class="panel-btn panel-btn--secondary" type="button">Выйти</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- КРАСИВАЯ ЗЕЛЁНАЯ РАМКА ДЛЯ КЛАДОВЩИКА -->
+  <section class="panel-hero">
+    <div class="panel-hero__inner">
+      <div>
+        <p class="panel-hero__label">Складской учёт</p>
+        <h1 class="panel-hero__title">Выдача товаров</h1>
+        <p class="panel-hero__text">
+          Просматривайте одобренные заявки и подтверждайте выдачу товаров водителю.
+          При выдаче товары списываются со склада, а заявка переходит в статус "Отгружена".
+        </p>
+      </div>
+      <div class="panel-stat">
+        <span class="panel-stat__value" id="ordersCount">0</span>
+        <span class="panel-stat__label">заявок к выдаче</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="cladman-container">
+    <div id="ordersList">
+      <p class="products-empty">Загрузка...</p>
+    </div>
+  </div>
+
+  <script>
+    const ordersList = document.getElementById('ordersList');
+    const logoutButton = document.getElementById('logoutButton');
+    const cladmanRole = document.getElementById('cladmanRole');
+    const ordersCount = document.getElementById('ordersCount');
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function formatPrice(price) {
+      if (price === null || price === undefined) return '—';
+      return new Intl.NumberFormat('ru-RU', {
+        style: 'currency',
+        currency: 'RUB',
+        maximumFractionDigits: 0
+      }).format(price);
+    }
+
+    function getStatusLabel(status) {
+      const map = {
+        pending: 'На рассмотрении',
+        approved: 'Одобрена',
+        rejected: 'Отклонена',
+        shipped: 'Отгружена',
+        delivered: 'Доставлена'
+      };
+      return map[status] || status;
+    }
+
+    function getStatusClass(status) {
+      return 'status-' + status;
+    }
+
+    async function shipOrder(id) {
+      if (!confirm('Подтвердить выдачу товара по заявке #' + id + '?')) return;
+      try {
+        const response = await fetch(`/api/orders/${id}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'shipped' })
+        });
+        const data = await response.json();
+        if (!data.ok) {
+          alert(data.message || 'Ошибка');
           return;
         }
+        loadOrders();
+      } catch (err) {
+        alert('Ошибка соединения');
+      }
+    }
 
-        const data = await response.json();
+    function renderOrders(orders) {
+      const approvedOrders = orders.filter(o => o.status === 'approved');
 
-        if (!data.ok) {
-          window.location.href = "/auth.html";
-        }
+      ordersCount.textContent = String(approvedOrders.length);
+
+      if (approvedOrders.length === 0) {
+        ordersList.innerHTML = `
+            <div class="empty-state">
+              <span class="empty-state__icon">📦</span>
+              <p class="empty-state__title">Нет заявок к выдаче</p>
+              <p class="empty-state__text">Все одобренные заявки уже отгружены</p>
+            </div>
+          `;
+        return;
       }
 
-      checkAuth();
-    </script>
-  </head>
-  <body>
-    <h1>Страница кладовщика</h1>
-    <button id="logoutButton" type="button">Выйти</button>
+      ordersList.innerHTML = approvedOrders.map(function (order) {
+        const itemsHtml = order.items.map(item =>
+          `${escapeHtml(item.name)} × ${item.quantity}`
+        ).join(', ');
+        const total = order.total_price || order.items.reduce((sum, i) => sum + (i.price || 0) * i.quantity, 0);
 
-    <script>
-      const logoutButton = document.getElementById("logoutButton");
+        return `
+            <article class="order-card">
+              <div class="order-card__head">
+                <span class="order-card__id">📋 Заявка #${order.id}</span>
+                <span class="order-card__status ${getStatusClass(order.status)}">${getStatusLabel(order.status)}</span>
+              </div>
+              <div class="order-card__user">👤 Заказчик: ${escapeHtml(order.user_title)}</div>
+              <div class="order-card__items">${itemsHtml}</div>
+              <div class="order-card__total">💰 Итого: ${formatPrice(total)}</div>
+              <div style="font-size:0.75rem; color:#6b7c6e; margin-top:4px;">
+  ${new Date(order.created_at).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}
+</div>
+              <button class="btn-ship" onclick="shipOrder(${order.id})">📤 Выдать товар</button>
+            </article>
+          `;
+      }).join('');
+    }
 
-      logoutButton.addEventListener("click", async function () {
-        await fetch("/api/logout", {
-          method: "POST",
-        });
+    async function loadOrders() {
+      const response = await fetch('/api/orders');
+      const data = await response.json();
+      if (!data.ok) {
+        ordersList.innerHTML = '<p class="products-empty products-empty--error">Не удалось загрузить заявки</p>';
+        return;
+      }
+      renderOrders(data.orders);
+    }
 
-        window.location.href = "/auth.html";
-      });
-    </script>
-  </body>
+    async function checkAuth() {
+      const response = await fetch('/api/me');
+      if (response.status === 401) {
+        window.location.href = '/auth.html';
+        return false;
+      }
+      const data = await response.json();
+      if (!data.ok || data.account.role !== 'cladman') {
+        window.location.href = '/auth.html';
+        return false;
+      }
+      cladmanRole.textContent = data.account.title || 'Кладовщик';
+      return true;
+    }
+
+    logoutButton.addEventListener('click', async function () {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/auth.html';
+    });
+
+    checkAuth().then(function (ok) {
+      if (ok) {
+        loadOrders();
+        setInterval(loadOrders, 10000);
+      }
+    });
+  </script>
+</body>
+
 </html>

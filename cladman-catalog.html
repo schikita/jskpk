@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Каталог товаров</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="page">
+    <section class="panel">
+      <div class="page-header">
+        <div>
+          <h1>Каталог товаров</h1>
+          <p>Просмотр товаров для кладовщика. Редактирование недоступно.</p>
+        </div>
+
+        <a class="btn btn-secondary" href="/cladman-page.html">Назад</a>
+      </div>
+
+      <div id="catalogMessage" class="catalog-message">Загрузка каталога...</div>
+      <div id="catalogGrid" class="catalog-grid"></div>
+    </section>
+  </main>
+
+  <script>
+    const catalogMessage = document.getElementById('catalogMessage');
+    const catalogGrid = document.getElementById('catalogGrid');
+
+    function formatPrice(value) {
+      return Number(value || 0).toLocaleString('ru-RU', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function createProductCard(product) {
+      const card = document.createElement('article');
+      card.className = 'product-card';
+
+      const image = document.createElement('img');
+      image.className = 'product-image';
+      image.src = product.image_url || '/images/products/no-image.svg';
+      image.alt = product.name;
+
+      const body = document.createElement('div');
+      body.className = 'product-body';
+
+      const category = document.createElement('div');
+      category.className = 'product-category';
+      category.textContent = product.category || 'Без категории';
+
+      const title = document.createElement('h2');
+      title.textContent = product.name;
+
+      const description = document.createElement('p');
+      description.textContent = product.description || 'Описание не указано';
+
+      const meta = document.createElement('div');
+      meta.className = 'product-meta';
+
+      const price = document.createElement('span');
+      price.textContent = `${formatPrice(product.price)} руб.`;
+
+      const stock = document.createElement('span');
+      stock.textContent = `Остаток: ${product.stock}`;
+
+      meta.append(price, stock);
+      body.append(category, title, description, meta);
+      card.append(image, body);
+
+      return card;
+    }
+
+    async function loadProducts() {
+      try {
+        const response = await fetch('/api/products');
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || 'Не удалось загрузить каталог');
+        }
+
+        catalogGrid.innerHTML = '';
+
+        if (!result.products.length) {
+          catalogMessage.textContent = 'В каталоге пока нет товаров';
+          return;
+        }
+
+        catalogMessage.hidden = true;
+
+        for (const product of result.products) {
+          catalogGrid.appendChild(createProductCard(product));
+        }
+      } catch (error) {
+        catalogMessage.textContent = error.message;
+        catalogMessage.className = 'catalog-message error';
+      }
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>
