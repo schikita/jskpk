@@ -116,7 +116,8 @@ app.get('/user-page.html', requireRole('user', 'manager', 'cladman', 'driver'), 
 app.get('/manager-page.html', requireRole('manager'), (req, res) => res.sendFile(getPage('manager-page.html')));
 app.get('/manager/products/new', requireRole('manager'), (req, res) => res.sendFile(getPage('manager-add-product.html')));
 app.get('/cladman-page.html', requireRole('cladman'), (req, res) => res.sendFile(getPage('cladman-page.html')));
-app.get('/cladman/catalog', requireRole('cladman'), (req, res) => res.sendFile(getPage('cladman-catalog.html')));
+app.get('/cladman/catalog', requireRole('cladman', 'manager'), (req, res) => res.sendFile(getPage('cladman-catalog.html')));
+
 app.get('/driver-page.html', requireRole('driver'), (req, res) => res.sendFile(getPage('driver-page.html')));
 
 app.use(express.static(__dirname));
@@ -141,6 +142,14 @@ app.post('/api/cookie-consent', (req, res) => {
     path: '/'
   });
   res.json({ ok: true, consent });
+});
+
+
+app.get('/debug/session', (req, res) => {
+  res.json({
+    session: req.session,
+    account: req.session.account || null
+  });
 });
 
 // --- Auth ---

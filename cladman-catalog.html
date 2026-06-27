@@ -11,10 +11,10 @@
       <div class="page-header">
         <div>
           <h1>Каталог товаров</h1>
-          <p>Просмотр товаров для кладовщика. Редактирование недоступно.</p>
+          <p id="catalogSubtitle">Просмотр товаров. Редактирование недоступно.</p>
         </div>
 
-        <a class="btn btn-secondary" href="/cladman-page.html">Назад</a>
+        <a id="backLink" class="btn btn-secondary" href="/manager-page.html">Назад</a>
       </div>
 
       <div id="catalogMessage" class="catalog-message">Загрузка каталога...</div>
@@ -25,6 +25,35 @@
   <script>
     const catalogMessage = document.getElementById('catalogMessage');
     const catalogGrid = document.getElementById('catalogGrid');
+    const backLink = document.getElementById('backLink');
+    const catalogSubtitle = document.getElementById('catalogSubtitle');
+
+    async function setupPageAccess() {
+      const response = await fetch('/api/me');
+      if (!response.ok) {
+        window.location.href = '/auth.html';
+        return false;
+      }
+
+      const result = await response.json();
+      if (!result.ok || !result.account) {
+        window.location.href = '/auth.html';
+        return false;
+      }
+
+      if (result.account.role === 'manager') {
+        backLink.href = '/manager-page.html';
+        catalogSubtitle.textContent = 'Просмотр каталога для менеджера. Редактирование недоступно на этой странице.';
+      } else if (result.account.role === 'cladman') {
+        backLink.href = '/cladman-page.html';
+        catalogSubtitle.textContent = 'Просмотр товаров для кладовщика. Редактирование недоступно.';
+      } else {
+        window.location.href = '/auth.html';
+        return false;
+      }
+
+      return true;
+    }
 
     function formatPrice(value) {
       return Number(value || 0).toLocaleString('ru-RU', {
@@ -98,7 +127,14 @@
       }
     }
 
-    loadProducts();
+    async function initCatalogPage() {
+      const allowed = await setupPageAccess();
+      if (allowed) {
+        loadProducts();
+      }
+    }
+
+    initCatalogPage();
   </script>
 </body>
 </html>
