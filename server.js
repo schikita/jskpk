@@ -7,7 +7,9 @@ const helmet = require('helmet');
 const db = require('./db');
 const addLog = db.addLog;
 const getActiveProducts = db.getActiveProducts;
+const getProductById = db.getProductById;
 const createProduct = db.createProduct;
+const updateProduct = db.updateProduct;
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -115,12 +117,12 @@ app.get('/auth.html', (req, res) => res.sendFile(getPage('auth.html')));
 app.get('/user-page.html', requireRole('user', 'manager', 'cladman', 'driver'), (req, res) => res.sendFile(getPage('user-page.html')));
 app.get('/manager-page.html', requireRole('manager'), (req, res) => res.sendFile(getPage('manager-page.html')));
 app.get('/manager/products/new', requireRole('manager'), (req, res) => res.sendFile(getPage('manager-add-product.html')));
+app.get('/manager/products/:id/edit', requireRole('manager'), (req, res) => res.sendFile(getPage('manager-edit-product.html')));
 app.get('/cladman-page.html', requireRole('cladman'), (req, res) => res.sendFile(getPage('cladman-page.html')));
 app.get('/cladman/catalog', requireRole('cladman', 'manager'), (req, res) => res.sendFile(getPage('cladman-catalog.html')));
 
 app.get('/driver-page.html', requireRole('driver'), (req, res) => res.sendFile(getPage('driver-page.html')));
-
-app.use(express.static(__dirname));
+app.get('/manager-edit-product.html', requireRole('manager'), (req, res) => res.sendFile(getPage('manager-edit-product.html')));
 
 // --- Cookie consent ---
 app.get('/api/cookie-consent', (req, res) => {
@@ -205,7 +207,29 @@ app.get('/api/products', (req, res) => {
   res.json({ ok: true, success: true, products });
 });
 
+app.get('/api/products/:id', (req, res) => {
+  const productId = Number(req.params.id);
 
+  if (!Number.isInteger(productId) || productId <= 0) {
+    return res.status(400).json({
+      ok: false,
+      success: false,
+      message: 'Некорректный идентификатор товара'
+    });
+  }
+
+  const product = getProductById(productId);
+
+  if (!product || product.is_active !== 1) {
+    return res.status(404).json({
+      ok: false,
+      success: false,
+      message: 'Товар не найден'
+    });
+  }
+
+  res.json({ ok: true, success: true, product });
+});
 
 app.post('/api/products', requireRoleApi('manager'), (req, res) => {
   const name = String(req.body.name || '').trim();
@@ -633,6 +657,78 @@ app.post(
     });
   }
 );
+
+app.patch(
+  '/api/manager/products/:id',
+  requireRoleApi('manager'),
+  productImageUpload.single('image'),
+  function (req, res) {
+    const productId = Number(req.params.id);
+
+    if (!Number.isInteger(productId) || productId <= 0) {
+      return res.status(400).json({
+        ok: false,
+        success: false,
+        message: 'Некорректный идентификатор товара'
+      });
+    }
+
+    const name = normalizeText(req.body.name, 120);
+    const description = normalizeText(req.body.description, 500);
+    const category = normalizeText(req.body.category, 80);
+    const price = normalizePrice(req.body.price);
+    const stock = normalizeStock(req.body.stock);
+
+    if (!name) {
+      return res.status(400).json({
+        ok: false,
+        success: false,
+        message: 'Введите название товара'
+      });
+    }
+
+    const existingProduct = getProductById(productId);
+
+    if (!existingProduct || existingProduct.is_active !== 1) {
+      return res.status(404).json({
+        ok: false,
+        success: false,
+        message: 'Товар не найден'
+      });
+    }
+
+    const imageUrl = req.file
+      ? `/uploads/products/${req.file.filename}`
+      : existingProduct.image_url;
+
+    const product = updateProduct(productId, {
+      name,
+      description,
+      category,
+      price,
+      stock,
+      image_url: imageUrl
+    });
+
+    if (req.session && req.session.account) {
+      addLog(
+        req.session.account.id,
+        req.session.account.role,
+        req.session.account.title,
+        'product_updated',
+        `Обновлён товар: ${product.name}`
+      );
+    }
+
+    res.json({
+      ok: true,
+      success: true,
+      product
+    });
+  }
+);
+
+app.use(express.static(__dirname));
 
 // --- 404 ---
 app.use((req, res) => {

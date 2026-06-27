@@ -347,7 +347,47 @@ function getActiveProducts() {
   `).all();
 }
 
+function getProductById(productId) {
+  return db.prepare(`
+    SELECT id, name, description, category, price, stock, image_url, is_active, created_at, updated_at
+    FROM products
+    WHERE id = ?
+  `).get(productId);
+}
+
+function updateProduct(productId, { name, description, category, price, stock, image_url }) {
+  const existingProduct = getProductById(productId);
+
+  if (!existingProduct) {
+    return null;
+  }
+
+  const nextImageUrl = image_url || existingProduct.image_url;
+
+  db.prepare(`
+    UPDATE products
+    SET name = ?, description = ?, category = ?, price = ?, stock = ?, image_url = ?, updated_at = datetime('now', 'localtime')
+    WHERE id = ?
+  `).run(
+    name,
+    description || '',
+    category || '',
+    price,
+    stock,
+    nextImageUrl,
+    productId
+  );
+
+  return db.prepare(`
+    SELECT id, name, description, category, price, stock, image_url, created_at, updated_at
+    FROM products
+    WHERE id = ?
+  `).get(productId);
+}
+
 module.exports = db;
 module.exports.addLog = addLog;
 module.exports.createProduct = createProduct;
 module.exports.getActiveProducts = getActiveProducts;
+module.exports.getProductById = getProductById;
+module.exports.updateProduct = updateProduct;

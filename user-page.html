@@ -7,37 +7,130 @@
     <title>Молунов Кирилл — Пользователь</title>
     <style>
       .user-container {
-        max-width: 1100px;
+        max-width: 1120px;
         margin: 0 auto;
-        padding: 24px;
+        padding: 20px 24px 32px;
       }
 
-      .user-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 24px;
+      .user-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
       }
+
+      .user-catalog-section .section-card {
+        padding: 24px;
+        min-height: 520px;
+      }
+
+      .user-catalog-section .section-title {
+        font-size: 1.375rem;
+        margin-bottom: 18px;
+      }
+
+      .user-catalog-section #catalog {
+        max-height: min(72vh, 680px);
+        overflow-y: auto;
+        padding-right: 6px;
+      }
+
+      .user-orders-section {
+        margin-top: 8px;
+      }
+
+      .user-orders-section .section-card {
+        padding: 16px 18px;
+        max-width: 560px;
+      }
+
+      .user-orders-section .section-title {
+        font-size: 1rem;
+        margin-bottom: 12px;
+      }
+
+      .user-orders-section #orderHistory {
+        max-height: 220px;
+        overflow-y: auto;
+      }
+
+      .page-panel--user .panel-hero {
+        padding: 16px 24px 0;
+      }
+
+      .page-panel--user .panel-hero__inner {
+        padding: 18px 24px;
+        gap: 16px;
+      }
+
+      .page-panel--user .panel-hero__label {
+        margin-bottom: 6px;
+        padding: 4px 10px;
+        font-size: 0.6875rem;
+      }
+
+      .page-panel--user .panel-hero__title {
+        font-size: 1.375rem;
+      }
+
+      .page-panel--user .panel-hero__text {
+        margin-top: 6px;
+        font-size: 0.8125rem;
+        line-height: 1.45;
+        max-width: 480px;
+      }
+
+      .page-panel--user .panel-stat {
+        min-width: 110px;
+        padding: 12px 14px;
+      }
+
+      .page-panel--user .panel-stat__value {
+        font-size: 1.5rem;
+      }
+
+      .page-panel--user .panel-stat__label {
+        font-size: 0.75rem;
+      }
+
       @media (max-width: 768px) {
-        .user-grid { grid-template-columns: 1fr; }
+        .user-catalog-section .section-card {
+          min-height: auto;
+        }
+
+        .user-catalog-section #catalog {
+          max-height: 55vh;
+        }
+
+        .user-orders-section .section-card {
+          max-width: none;
+        }
       }
 
       .product-card {
-        padding: 14px 16px;
+        padding: 16px 18px;
         border: 1px solid #e2e9e3;
         border-radius: 12px;
         background: #fff;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 12px;
-        margin-bottom: 10px;
+        gap: 16px;
+        margin-bottom: 12px;
         transition: border-color 0.2s, box-shadow 0.2s;
       }
       .product-card:hover {
         border-color: #4a7c59;
         box-shadow: 0 4px 12px rgba(74,124,89,0.08);
       }
-      .product-card__info { flex: 1; }
+      .product-card__image {
+        width: 88px;
+        height: 88px;
+        border-radius: 10px;
+        object-fit: cover;
+        background: #eef3ef;
+        flex-shrink: 0;
+      }
+      .product-card__info { flex: 1; min-width: 0; }
       .product-card__name { font-weight: 600; color: #1f3d24; }
       .product-card__price { color: #4a7c59; font-weight: 600; }
       .product-card__category {
@@ -193,10 +286,10 @@
       .status-delivered { background: #e0e7ff; color: #3730a3; }
 
       .order-history-item {
-        padding: 14px 16px;
+        padding: 10px 12px;
         border: 1px solid #e2e9e3;
-        border-radius: 10px;
-        margin-bottom: 10px;
+        border-radius: 8px;
+        margin-bottom: 8px;
         background: #fff;
         transition: border-color 0.2s;
       }
@@ -426,7 +519,7 @@
       }
     </style>
   </head>
-  <body class="page-panel">
+  <body class="page-panel page-panel--user">
     <header class="panel-header">
       <div class="panel-header__inner">
         <a class="panel-logo" href="./index.html">ОСПК</a>
@@ -461,20 +554,20 @@
     </section>
 
     <div class="user-container">
-      <div class="user-grid">
+      <div class="user-layout">
         <!-- Каталог -->
-        <section>
+        <section class="user-catalog-section">
           <div class="section-card">
             <h2 class="section-title">📦 Каталог</h2>
             <input type="text" id="searchInput" class="search-input" placeholder="Поиск товаров..." />
-            <div id="catalog" style="max-height: 500px; overflow-y: auto; padding-right: 4px;">
+            <div id="catalog">
               <p class="products-empty">Загрузка...</p>
             </div>
           </div>
         </section>
 
         <!-- История заявок -->
-        <section>
+        <section class="user-orders-section">
           <div class="section-card">
             <h2 class="section-title">📋 Мои заявки</h2>
             <div id="orderHistory">
@@ -687,6 +780,12 @@
 
         catalogEl.innerHTML = filtered.map(p => `
           <div class="product-card">
+            <img
+              class="product-card__image"
+              src="${escapeHtml(p.image_url || '/images/products/no-image.svg')}"
+              alt="${escapeHtml(p.name)}"
+              onerror="this.onerror=null;this.src='/images/products/no-image.svg';"
+            >
             <div class="product-card__info">
               <div class="product-card__name">${escapeHtml(p.name)}</div>
               <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:4px;">

@@ -27,6 +27,7 @@
     const catalogGrid = document.getElementById('catalogGrid');
     const backLink = document.getElementById('backLink');
     const catalogSubtitle = document.getElementById('catalogSubtitle');
+    let currentUserRole = null;
 
     async function setupPageAccess() {
       const response = await fetch('/api/me');
@@ -42,9 +43,11 @@
       }
 
       if (result.account.role === 'manager') {
+        currentUserRole = 'manager';
         backLink.href = '/manager-page.html';
-        catalogSubtitle.textContent = 'Просмотр каталога для менеджера. Редактирование недоступно на этой странице.';
+        catalogSubtitle.textContent = 'Каталог для менеджера. Можно просматривать и редактировать товары.';
       } else if (result.account.role === 'cladman') {
+        currentUserRole = 'cladman';
         backLink.href = '/cladman-page.html';
         catalogSubtitle.textContent = 'Просмотр товаров для кладовщика. Редактирование недоступно.';
       } else {
@@ -95,6 +98,20 @@
 
       meta.append(price, stock);
       body.append(category, title, description, meta);
+
+      if (currentUserRole === 'manager') {
+        const actions = document.createElement('div');
+        actions.className = 'product-card__actions';
+
+        const editLink = document.createElement('a');
+        editLink.className = 'btn btn-primary product-card__edit';
+        editLink.href = `/manager-edit-product.html?id=${product.id}`;
+        editLink.textContent = 'Редактировать';
+
+        actions.append(editLink);
+        body.append(actions);
+      }
+
       card.append(image, body);
 
       return card;

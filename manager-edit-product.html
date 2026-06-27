@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Редактировать товар</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="page">
+    <section class="panel">
+      <div class="page-header">
+        <div>
+          <h1>Редактировать товар</h1>
+          <p>Измените данные товара и сохраните изменения.</p>
+        </div>
+
+        <a class="btn btn-secondary" href="/cladman/catalog">Назад в каталог</a>
+      </div>
+
+      <div id="pageMessage" class="catalog-message">Загрузка товара...</div>
+
+      <form id="productForm" class="product-form" enctype="multipart/form-data" hidden>
+        <label class="field">
+          <span>Название товара</span>
+          <input type="text" name="name" maxlength="120" required>
+        </label>
+
+        <label class="field">
+          <span>Описание</span>
+          <textarea name="description" maxlength="500" rows="4"></textarea>
+        </label>
+
+        <label class="field">
+          <span>Категория</span>
+          <input type="text" name="category" maxlength="80">
+        </label>
+
+        <label class="field">
+          <span>Цена</span>
+          <input type="number" name="price" min="0" step="0.01" value="0">
+        </label>
+
+        <label class="field">
+          <span>Остаток на складе</span>
+          <input type="number" name="stock" min="0" step="1" value="0">
+        </label>
+
+        <label class="field">
+          <span>Новая картинка товара</span>
+          <input id="imageInput" type="file" name="image" accept="image/jpeg,image/png,image/webp">
+        </label>
+
+        <div class="preview-box">
+          <img id="imagePreview" src="/images/products/no-image.svg" alt="Предпросмотр">
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" type="submit">Сохранить изменения</button>
+          <a class="btn btn-secondary" href="/cladman/catalog">Отмена</a>
+        </div>
+
+        <p id="message" class="message"></p>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    const productForm = document.getElementById('productForm');
+    const pageMessage = document.getElementById('pageMessage');
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+    const message = document.getElementById('message');
+
+    function getProductId() {
+      const params = new URLSearchParams(window.location.search);
+      const queryId = Number(params.get('id'));
+
+      if (Number.isInteger(queryId) && queryId > 0) {
+        return queryId;
+      }
+
+      const match = window.location.pathname.match(/\/manager\/products\/(\d+)\/edit$/);
+      return match ? Number(match[1]) : null;
+    }
+
+    const productId = getProductId();
+
+    async function fetchProductById(id) {
+      const singleResponse = await fetch(`/api/products/${id}`);
+
+      if (singleResponse.ok) {
+        const singleResult = await singleResponse.json();
+        if (singleResult.success && singleResult.product) {
+          return singleResult.product;
+        }
+      }
+
+      const listResponse = await fetch('/api/products');
+      const listResult = await listResponse.json();
+
+      if (!listResponse.ok || !listResult.success) {
+        throw new Error(listResult.message || 'Не удалось загрузить товар');
+      }
+
+      const product = listResult.products.find(function (item) {
+        return item.id === id;
+      });
+
+      if (!product) {
+        throw new Error('Товар не найден');
+      }
+
+      return product;
+    }
+
+    function fillForm(product) {
+      productForm.elements.name.value = product.name || '';
+      productForm.elements.description.value = product.description || '';
+      productForm.elements.category.value = product.category || '';
+      productForm.elements.price.value = product.price ?? 0;
+      productForm.elements.stock.value = product.stock ?? 0;
+      imagePreview.src = product.image_url || '/images/products/no-image.svg';
+    }
+
+    async function loadProduct() {
+      if (!productId) {
+        pageMessage.textContent = 'Некорректный адрес страницы';
+        pageMessage.className = 'catalog-message error';
+        return;
+      }
+
+      try {
+        const product = await fetchProductById(productId);
+        fillForm(product);
+        pageMessage.hidden = true;
+        productForm.hidden = false;
+      } catch (error) {
+        pageMessage.textContent = error.message;
+        pageMessage.className = 'catalog-message error';
+      }
+    }
+
+    imageInput.addEventListener('change', function () {
+      const file = imageInput.files[0];
+
+      if (!file) {
+        return;
+      }
+
+      imagePreview.src = URL.createObjectURL(file);
+    });
+
+    productForm.addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      message.textContent = 'Сохраняем изменения...';
+      message.className = 'message';
+
+      const formData = new FormData(productForm);
+
+      try {
+        let response = await fetch(`/api/manager/products/${productId}`, {
+          method: 'PATCH',
+          body: formData
+        });
+
+        if (response.status === 404) {
+          response = await fetch(`/api/products/${productId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: formData.get('name'),
+              description: formData.get('description'),
+              category: formData.get('category'),
+              price: formData.get('price'),
+              stock: formData.get('stock')
+            })
+          });
+        }
+
+        const result = await response.json();
+
+        if (!response.ok || !(result.success || result.ok)) {
+          throw new Error(result.message || 'Не удалось сохранить товар');
+        }
+
+        fillForm(result.product);
+        imageInput.value = '';
+
+        message.textContent = 'Изменения успешно сохранены';
+        message.className = 'message success';
+      } catch (error) {
+        message.textContent = error.message;
+        message.className = 'message error';
+      }
+    });
+
+    loadProduct();
+  </script>
+</body>
+</html>
