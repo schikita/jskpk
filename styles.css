@@ -1081,3 +1081,100 @@ body {
     font-size: 0.9rem;
   }
 }
+
+/* --- 404 error page --- */
+.page-error .error-page {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px 64px;
+  min-height: calc(100vh - 140px);
+  background-image:
+    linear-gradient(rgba(247, 249, 247, 0.92), rgba(247, 249, 247, 0.96)),
+    url("./bg-hero.png");
+  background-size: cover;
+  background-position: center center;
+}
+
+.error-page__card {
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+  padding: 48px 40px;
+  background: #fff;
+  border: 1px solid #e2e9e3;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(31, 61, 36, 0.08);
+}
+
+.error-page__code {
+  margin: 0 0 8px;
+  font-size: 4.5rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  background: linear-gradient(180deg, #5a9468 0%, #3d6649 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.error-page__title {
+  margin: 0 0 16px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f3d24;
+}
+
+.error-page__text {
+  margin: 0 0 12px;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #3d4f40;
+}
+
+.error-page__path {
+  margin: 0 0 28px;
+  font-size: 0.875rem;
+  font-family: ui-monospace, monospace;
+  color: #6b7f6e;
+  word-break: break-all;
+}
+
+.error-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.page-error .btn--secondary {
+  background: #eef5ef;
+  color: #1f3d24;
+  border: 1px solid #d4e4d7;
+}
+
+.page-error .btn--secondary:hover {
+  background: #e2ece4;
+  border-color: #c5d9c9;
+}
+
+@media (max-width: 480px) {
+  .error-page__card {
+    padding: 36px 24px;
+  }
+
+  .error-page__code {
+    font-size: 3.5rem;
+  }
+
+  .error-page__actions {
+    flex-direction: column;
+  }
+
+  .error-page__actions .btn {
+    width: 100%;
+    text-align: center;
+  }
+}

@@ -1,8 +1,14 @@
 const CONSENT_COOKIE = 'cookie_consent';
+const CONSENT_MAX_AGE_SEC = 60 * 60 * 24 * 365;
 
 function getConsent() {
   const match = document.cookie.match(/(?:^|; )cookie_consent=([^;]*)/);
   return match ? decodeURIComponent(match[1]) : null;
+}
+
+function setConsentCookie(value) {
+  document.cookie = CONSENT_COOKIE + '=' + encodeURIComponent(value) +
+    '; max-age=' + CONSENT_MAX_AGE_SEC + '; path=/; SameSite=Lax';
 }
 
 function hideCookieBanner() {
@@ -21,7 +27,7 @@ function showCookieBanner() {
   }
 }
 
-async function saveConsent(value) {
+async function syncConsentToServer(value) {
   const response = await fetch('/api/cookie-consent', {
     method: 'POST',
     headers: {
@@ -30,13 +36,30 @@ async function saveConsent(value) {
     body: JSON.stringify({ consent: value })
   });
 
-  const data = await response.json();
-
-  if (!data.ok) {
-    throw new Error(data.message || 'Не удалось сохранить выбор');
+  if (!response.ok) {
+    throw new Error('API unavailable');
   }
 
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    throw new Error('Invalid response');
+  }
+
+  const data = await response.json();
+  if (!data.ok) {
+    throw new Error(data.message || 'Server rejected consent');
+  }
+}
+
+async function saveConsent(value) {
+  setConsentCookie(value);
   hideCookieBanner();
+
+  try {
+    await syncConsentToServer(value);
+  } catch (e) {
+    // Сервер недоступен (file://, Live Preview) — локальная cookie уже сохранена
+  }
 }
 
 function initCookieBanner() {
@@ -56,15 +79,11 @@ function initCookieBanner() {
   showCookieBanner();
 
   acceptBtn.addEventListener('click', function () {
-    saveConsent('accepted').catch(function () {
-      alert('Не удалось сохранить согласие. Попробуйте ещё раз.');
-    });
+    saveConsent('accepted');
   });
 
   rejectBtn.addEventListener('click', function () {
-    saveConsent('rejected').catch(function () {
-      alert('Не удалось сохранить выбор. Попробуйте ещё раз.');
-    });
+    saveConsent('rejected');
   });
 }
 

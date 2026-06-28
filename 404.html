@@ -1,11 +1,74 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Молунов Кирилл</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="./styles.css">
+  <title>404 — Страница не найдена | ОСПК</title>
 </head>
-<body>
-    
+<body class="page-home page-error">
+  <header class="header">
+    <div class="header__inner">
+      <a class="logo" href="./index.html">ОСПК</a>
+      <nav class="nav">
+        <a class="nav__link" href="./index.html#about">О нас</a>
+        <a class="nav__link" href="./index.html#products">Продукция</a>
+        <a class="nav__link" href="./index.html#contacts">Контакты</a>
+        <a class="nav__link nav__link--auth" href="./auth.html">Вход для сотрудников</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="error-page">
+    <section class="error-page__card">
+      <p class="error-page__code" aria-hidden="true">404</p>
+      <h1 class="error-page__title">Страница не найдена</h1>
+      <p class="error-page__text">
+        Запрошенный адрес не существует или был перемещён.
+        Проверьте ссылку или вернитесь на главную страницу.
+      </p>
+      <p class="error-page__path" id="errorPath" hidden></p>
+      <div class="error-page__actions">
+        <a class="btn btn--primary" href="./index.html">На главную</a>
+        <a class="btn btn--secondary" href="./auth.html">Вход для сотрудников</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© 2026 Отдел сбыта пищевых концентратов</p>
+  </footer>
+
+  <aside class="cookie-banner cookie-banner--hidden" id="cookieBanner" role="dialog" aria-label="Уведомление о cookie" aria-hidden="true">
+    <div class="cookie-banner__inner">
+      <span class="cookie-banner__icon" aria-hidden="true">🍪</span>
+      <p class="cookie-banner__text">
+        Мы используем cookie для работы сайта и авторизации.
+        Вы можете принять их использование или отклонить необязательные cookie.
+      </p>
+      <div class="cookie-banner__actions">
+        <button type="button" class="cookie-banner__btn cookie-banner__btn--secondary" id="cookieReject">
+          Отклонить
+        </button>
+        <button type="button" class="cookie-banner__btn" id="cookieAccept">
+          Принять
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <script src="./cookie-consent.js"></script>
+  <script>
+    (function () {
+      var pathEl = document.getElementById('errorPath');
+      var path = window.location.pathname;
+
+      if (path && path !== '/404.html' && path !== '/') {
+        pathEl.textContent = 'Запрошенный адрес: ' + path;
+        pathEl.hidden = false;
+      }
+    })();
+  </script>
 </body>
 </html>

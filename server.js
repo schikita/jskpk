@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const express = require('express');
 const session = require('express-session');
-const helmet = require('helmet');
+const helmet = require('helmet');  // SEO
 const db = require('./db');
 const addLog = db.addLog;
 const getActiveProducts = db.getActiveProducts;
@@ -23,7 +23,7 @@ if (!fs.existsSync(productImageDir)) {
 
 if (!fs.existsSync(productImagesDir)) {
   fs.mkdirSync(productImagesDir, { recursive: true });
-}
+} 
 
 app.use(helmet({
   contentSecurityPolicy: false
@@ -114,6 +114,7 @@ function requireRoleApi(...roles) {
 app.get('/', (req, res) => res.sendFile(getPage('index.html')));
 app.get('/index.html', (req, res) => res.sendFile(getPage('index.html')));
 app.get('/auth.html', (req, res) => res.sendFile(getPage('auth.html')));
+app.get('/404.html', (req, res) => res.status(404).sendFile(getPage('404.html')));
 app.get('/user-page.html', requireRole('user', 'manager', 'cladman', 'driver'), (req, res) => res.sendFile(getPage('user-page.html')));
 app.get('/manager-page.html', requireRole('manager'), (req, res) => res.sendFile(getPage('manager-page.html')));
 app.get('/manager/products/new', requireRole('manager'), (req, res) => res.sendFile(getPage('manager-add-product.html')));
@@ -732,7 +733,15 @@ app.use(express.static(__dirname));
 
 // --- 404 ---
 app.use((req, res) => {
-  res.status(404).send('Страница не найдена');
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({
+      ok: false,
+      success: false,
+      message: 'Страница не найдена'
+    });
+  }
+
+  res.status(404).sendFile(getPage('404.html'));
 });
 
 app.use(function (error, req, res, next) {
@@ -753,6 +762,16 @@ app.use(function (error, req, res, next) {
   });
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Сервер запущен: http://localhost:${PORT}`);
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`Порт ${PORT} уже занят другим процессом.`);
+    console.error(`Завершите его: netstat -ano | findstr :${PORT}  →  taskkill /PID <номер> /F`);
+    process.exit(1);
+  }
+
+  throw err;
 });
